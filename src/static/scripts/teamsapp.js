@@ -6,6 +6,7 @@
 
     // Check the initial theme user chose and respect it
     microsoftTeams.getContext(function (context) {
+   alert('TCL ------> : context', context)
         if (context && context.theme) {
             setTheme(context.theme);
         }
@@ -41,7 +42,7 @@
                 // This API tells Microsoft Teams to enable the 'Save' button. Since Microsoft Teams always assumes
                 // an initial invalid state, without this call the 'Save' button will never be enabled.
                 microsoftTeams.settings.setValidityState(
-                    selectedTab === 'first' || selectedTab === 'second'
+                    selectedTab === 'first' || selectedTab === 'second' ||selectedTab === 'hello'
                 );
             };
         }
@@ -59,7 +60,9 @@
     // Create the URL that Microsoft Teams will load in the tab. You can compose any URL even with query strings.
     function createTabUrl() {
         var tabChoice = document.getElementById('tabChoice');
+        console.log('TCL ------> : createTabUrl -> tabChoice', tabChoice)
         var selectedTab = tabChoice[tabChoice.selectedIndex].value;
+        console.log('TCL ------> : createTabUrl -> selectedTab', selectedTab)
 
         return (
             window.location.protocol +

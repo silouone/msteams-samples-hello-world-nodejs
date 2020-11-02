@@ -2,22 +2,409 @@
 <html lang="en">
 
 <head>
-    <title>Microsoft Teams Hello World Sample App</title>
-    <link rel="stylesheet" type="text/css" href="/styles/msteams-16.css">
-    <link rel="stylesheet" type="text/css" href="/styles/custom.css">
-    <script src="https://unpkg.com/@microsoft/teams-js/dist/MicrosoftTeams.min.js" crossorigin="anonymous"></script>
-    <script src="/scripts/teamsapp.js"></script>
+  <title>Microsoft Teams Hello World Sample App</title>
+  <link rel="stylesheet" type="text/css" href="/styles/msteams-16.css">
+  <link rel="stylesheet" type="text/css" href="/styles/custom.css">
+  <script src="https://statics.teams.microsoft.com/sdk/v1.6.0/js/MicrosoftTeams.min.js"
+    crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.js" crossorigin="anonymous"></script>
+
+  <!-- <script src="https://unpkg.com/@microsoft/teams-js/dist/MicrosoftTeams.min.js" crossorigin="anonymous"></script> -->
 </head>
 
 <body class="theme-light">
+  <script type="text/javascript">
+  /*
+    (function test() {
+      'use strict';
+
+      microsoftTeams.initialize();
+      // microsoftTeams.authentication.authenticate({
+      //       url: "https://f67e3a3cae12.ngrok.io" + "/auth-start",
+      //       width: 600,
+      //       height: 535,
+      //       successCallback: function (result) {
+      //         getUserProfile(result.accessToken)
+
+      //         console.log("Login succeeded: " + JSON.stringify(result));
+      //         return result
+      //       },
+      //       failureCallback: function (reason) {
+      //         console.log("Login failed: " + reason);
+      //         throw reason
+      //       }
+      //     });
+      function getTeamsContext() {
+      console.log('TCL ------> : getTeamsContext', {getTeamsContext})
+        return new Promise(resolve => microsoftTeams.getContext(resolve), reject => console.log('ERR getTeamsContext'));
+      }
+
+      function getClientSideToken() {
+        return new Promise((resolve, reject) => {
+
+          console.log("1. Get auth token from Microsoft Teams");
+          microsoftTeams.authentication.authenticate({
+            url: "https://f67e3a3cae12.ngrok.io" + "/auth",
+            width: 600,
+            height: 535,
+            successCallback: function (result) {
+              getUserProfile(result.accessToken)
+
+              console.log("Login succeeded: " + JSON.stringify(result));
+              return result
+            },
+            failureCallback: function (reason) {
+              console.log("Login failed: " + reason);
+              throw reason
+            }
+          });
+        })
+      }
+
+
+      getTeamsContext().then(function (context) {
+        console.log('TCL ------> -getTeamsContext> context', JSON.stringify(context, null, 4))
+        let state = _guid();
+        localStorage.setItem("simple.state", state);
+        localStorage.removeItem("simple.error");
+        console.log('TCL ------> : getClientSideToken -> localStorage', localStorage)
+
+        // See https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-v2-protocols-implicit
+        // for documentation on these query parameters
+        let queryParams = {
+          client_id: "8de3e1f3-6e43-4454-b559-f8ce91760e82",
+          response_type: "id_token token",
+          response_mode: "fragment",
+          resource: "https://graph.microsoft.com/",
+          scope: "https://graph.microsoft.com/User.Read openid",
+          redirect_uri: "https://f67e3a3cae12.ngrok.io/auth",
+          nonce: _guid(),
+          state: state,
+          // login_hint pre-fills the username/email address field of the sign in page for the user, 
+          // if you know their username ahead of time.
+          login_hint: context.upn,
+        };
+
+        // Go to the AzureAD authorization endpoint
+        let authorizeEndpoint = "https://login.microsoftonline.com/common/oauth2/authorize?" + toQueryString(queryParams);
+        console.log('TCL ------> : getClientSideToken -> authorizeEndpoint', authorizeEndpoint)
+        window.location.assign(authorizeEndpoint);
+      }).then(() => getClientSideToken()).catch(err => console.log('ERR', err))
+
+      console.log('LOCATIOON', window.location)
+      function toQueryString(queryParams) {
+        let encodedQueryParams = [];
+        for (let key in queryParams) {
+          encodedQueryParams.push(key + "=" + encodeURIComponent(queryParams[key]));
+        }
+        return encodedQueryParams.join("&");
+      }
+
+      function _decimalToHex(number) {
+        var hex = number.toString(16);
+        while (hex.length < 2) {
+          hex = '0' + hex;
+        }
+        return hex;
+      }
+
+      // Generates RFC4122 version 4 guid (128 bits)
+      // (From ADAL.js: https://github.com/AzureAD/azure-activedirectory-library-for-js/blob/dev/lib/adal.js)
+      function _guid() {
+        var cryptoObj = window.crypto || window.msCrypto; // for IE 11
+        if (cryptoObj && cryptoObj.getRandomValues) {
+          var buffer = new Uint8Array(16);
+          cryptoObj.getRandomValues(buffer);
+          buffer[6] |= 0x40; 
+          buffer[6] &= 0x4f; 
+          buffer[8] |= 0x80; 
+          buffer[8] &= 0xbf; 
+          return _decimalToHex(buffer[0]) + _decimalToHex(buffer[1]) + _decimalToHex(buffer[2]) + _decimalToHex(buffer[3]) + '-' + _decimalToHex(buffer[4]) + _decimalToHex(buffer[5]) + '-' + _decimalToHex(buffer[6]) + _decimalToHex(buffer[7]) + '-' +
+            _decimalToHex(buffer[8]) + _decimalToHex(buffer[9]) + '-' + _decimalToHex(buffer[10]) + _decimalToHex(buffer[11]) + _decimalToHex(buffer[12]) + _decimalToHex(buffer[13]) + _decimalToHex(buffer[14]) + _decimalToHex(buffer[15]);
+        }
+        else {
+          var guidHolder = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+          var hex = '0123456789abcdef';
+          var r = 0;
+          var guidResponse = "";
+          for (var i = 0; i < 36; i++) {
+            if (guidHolder[i] !== '-' && guidHolder[i] !== '4') {
+              // each x and y needs to be random
+              r = Math.random() * 16 | 0;
+            }
+            if (guidHolder[i] === 'x') {
+              guidResponse += hex[r];
+            } else if (guidHolder[i] === 'y') {
+              r &= 0x3; // bit and with 0011 to set pos 2 to zero ?0??
+              r |= 0x8; // set pos 3 to 1 as 1???
+              guidResponse += hex[r];
+            } else {
+              guidResponse += guidHolder[i];
+            }
+          }
+          return guidResponse;
+        }
+      };
+      function getUserProfile(accessToken) {
+                $.ajax({
+                    url: "https://graph.microsoft.com/v1.0/me/",
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", "Bearer " + accessToken);
+                    },
+                    success: function (profile) {
+                        $("#profileDisplayName").text(profile.displayName);
+                        $("#profileJobTitle").text(profile.jobTitle);
+                        $("#profileMail").text(profile.mail);
+                        $("#profileUpn").text(profile.userPrincipalName);
+                        $("#profileObjectId").text(profile.id);
+                        $("#divProfile").css({ display: "" });
+                        $("#divError").css({ display: "none" });
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log("textStatus: " + textStatus + ", errorThrown:" + errorThrown);
+                        $("#divError").text(errorThrown).css({ display: "" });
+                        $("#divProfile").css({ display: "none" });
+                    },
+                });
+            }
+
+    })()
+    */
+    function hideProfileAndError() {
+                $("#divError").text("").css({ display: "none" });
+                $("#divProfile").css({ display: "none" });
+            }
+            function handleAuthError(reason) {
+                $("#divError").text(reason).css({ display: "" });
+                $("#divProfile").css({ display: "none" });
+            }
+  </script>
   <div class="surface">
     <div class="panel">
       <div class="font-semibold font-title">Hello, World
         <p> Welcome to Microsoft Teams Hello World sample app (Node.js)</p>
+        <button onclick="login()">Login to Azure AD</button>
+         <!-- Result -->
+    <p>
+      <div id="divError" style="display: none"></div>
+      <div id="divProfile" style="display: none">
+          <div><b>Name:</b> <span id="profileDisplayName"/></div>
+          <div><b>Job title:</b> <span id="profileJobTitle"/></div>
+          <div><b>E-mail:</b> <span id="profileMail"/></div>
+          <div><b>UPN:</b> <span id="profileUpn"/></div>
+          <div><b>Object id:</b> <span id="profileObjectId"/></div>
+      </div>
+  </p>
       </div>
     </div>
   </div>
   </div>
+   
 </body>
+<script>
+   'use strict';
+   microsoftTeams.initialize();
+   function login() {
+      //           hideProfileAndError(); 
 
+      //           function getTeamsContext() {
+      // console.log('TCL ------> : getTeamsContext', {getTeamsContext})
+      //   return new Promise(resolve => microsoftTeams.getContext(resolve), reject => console.log('ERR getTeamsContext'));
+      // }
+      // function _guid() {
+      //   var cryptoObj = window.crypto || window.msCrypto; // for IE 11
+      //   if (cryptoObj && cryptoObj.getRandomValues) {
+      //     var buffer = new Uint8Array(16);
+      //     cryptoObj.getRandomValues(buffer);
+      //     buffer[6] |= 0x40; 
+      //     buffer[6] &= 0x4f; 
+      //     buffer[8] |= 0x80; 
+      //     buffer[8] &= 0xbf; 
+      //     return _decimalToHex(buffer[0]) + _decimalToHex(buffer[1]) + _decimalToHex(buffer[2]) + _decimalToHex(buffer[3]) + '-' + _decimalToHex(buffer[4]) + _decimalToHex(buffer[5]) + '-' + _decimalToHex(buffer[6]) + _decimalToHex(buffer[7]) + '-' +
+      //       _decimalToHex(buffer[8]) + _decimalToHex(buffer[9]) + '-' + _decimalToHex(buffer[10]) + _decimalToHex(buffer[11]) + _decimalToHex(buffer[12]) + _decimalToHex(buffer[13]) + _decimalToHex(buffer[14]) + _decimalToHex(buffer[15]);
+      //   }
+      //   else {
+      //     var guidHolder = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+      //     var hex = '0123456789abcdef';
+      //     var r = 0;
+      //     var guidResponse = "";
+      //     for (var i = 0; i < 36; i++) {
+      //       if (guidHolder[i] !== '-' && guidHolder[i] !== '4') {
+      //         // each x and y needs to be random
+      //         r = Math.random() * 16 | 0;
+      //       }
+      //       if (guidHolder[i] === 'x') {
+      //         guidResponse += hex[r];
+      //       } else if (guidHolder[i] === 'y') {
+      //         r &= 0x3; // bit and with 0011 to set pos 2 to zero ?0??
+      //         r |= 0x8; // set pos 3 to 1 as 1???
+      //         guidResponse += hex[r];
+      //       } else {
+      //         guidResponse += guidHolder[i];
+      //       }
+      //     }
+      //     return guidResponse;
+      //   }
+      // };
+
+      // function _decimalToHex(number) {
+      //   var hex = number.toString(16);
+      //   while (hex.length < 2) {
+      //     hex = '0' + hex;
+      //   }
+      //   return hex;
+      // }
+
+      // function toQueryString(queryParams) {
+      //   let encodedQueryParams = [];
+      //   for (let key in queryParams) {
+      //     encodedQueryParams.push(key + "=" + encodeURIComponent(queryParams[key]));
+      //   }
+      //   return encodedQueryParams.join("&");
+      // }
+
+      // function getClientSideToken() {
+      //   return new Promise((resolve, reject) => {
+
+      //     console.log("1. Get auth token from Microsoft Teams");
+      //     microsoftTeams.authentication.authenticate({
+      //       url: "https://f67e3a3cae12.ngrok.io" + "/auth",
+      //       width: 600,
+      //       height: 535,
+      //       successCallback: function (result) {
+      //         getUserProfile(result.accessToken)
+
+      //         console.log("Login succeeded: " + JSON.stringify(result));
+      //         return result
+      //       },
+      //       failureCallback: function (reason) {
+      //         console.log("Login failed: " + reason);
+      //         throw reason
+      //       }
+      //     });
+      //   })
+      // }
+
+      // function getUserProfile(accessToken) {
+      //           $.ajax({
+      //               url: "https://graph.microsoft.com/v1.0/me/",
+      //               beforeSend: function(request) {
+      // //                   request.setRequestHeader("Authorization", "Bearer " + accessToken);
+      //               },
+      //               success: function (profile) {
+      //                   $("#profileDisplayName").text(profile.displayName);
+      //                   $("#profileJobTitle").text(profile.jobTitle);
+      //                   $("#profileMail").text(profile.mail);
+      //                   $("#profileUpn").text(profile.userPrincipalName);
+      //                   $("#profileObjectId").text(profile.id);
+      //                   $("#divProfile").css({ display: "" });
+      //                   $("#divError").css({ display: "none" });
+      //               },
+      //               error: function (xhr, textStatus, errorThrown) {
+      //                   console.log("textStatus: " + textStatus + ", errorThrown:" + errorThrown);
+      //                   $("#divError").text(errorThrown).css({ display: "" });
+      //                   $("#divProfile").css({ display: "none" });
+      //               },
+      //           });
+      //       }
+      //       getTeamsContext().then(function (context) {
+      //   console.log('TCL ------> -getTeamsContext> context', JSON.stringify(context, null, 4))
+      //   let state = _guid();
+      //   localStorage.setItem("simple.state", state);
+      //   localStorage.removeItem("simple.error");
+      //   console.log('TCL ------> : getClientSideToken -> localStorage', localStorage)
+
+        // See https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-v2-protocols-implicit
+        // for documentation on these query parameters
+        // let queryParams = {
+        //   client_id: "8de3e1f3-6e43-4454-b559-f8ce91760e82",
+        //   response_type: "id_token token",
+        //   response_mode: "fragment",
+        //   resource: "https://graph.microsoft.com/",
+        //   // scope: "https://graph.microsoft.com/User.Read openid",
+        //   redirect_uri: "https://f67e3a3cae12.ngrok.io/first",
+        //   nonce: _guid(),
+        //   state: state,
+        //   // login_hint pre-fills the username/email address field of the sign in page for the user, 
+        //   // if you know their username ahead of time.
+        //   login_hint: context.upn,
+        // };
+
+        // // Go to the AzureAD authorization endpoint
+        // let authorizeEndpoint = "https://login.microsoftonline.com/common/oauth2/authorize?" + toQueryString(queryParams);
+        // console.log('TCL ------> : getClientSideToken -> authorizeEndpoint', authorizeEndpoint)
+
+   
+
+        //     }).then(getClientSideToken()).then(token => {
+        //     console.log('TCL ------> : login -> token', token)
+        //     })
+        function getUserProfile(accessToken) {
+                $.ajax({
+                    url: "https://graph.microsoft.com/v1.0/me/",
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", "Bearer " + accessToken);
+                    },
+                    success: function (profile) {
+                        $("#profileDisplayName").text(profile.displayName);
+                        $("#profileJobTitle").text(profile.jobTitle);
+                        $("#profileMail").text(profile.mail);
+                        $("#profileUpn").text(profile.userPrincipalName);
+                        $("#profileObjectId").text(profile.id);
+                        $("#divProfile").css({ display: "" });
+                        $("#accessToken").text(accessToken)
+                        $("#divError").css({ display: "none" });
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log("textStatus: " + textStatus + ", errorThrown:" + errorThrown);
+                        $("#divError").text(errorThrown).css({ display: "" });
+                        $("#divProfile").css({ display: "none" });
+                    }
+                });
+            }
+
+            function validateToken(accessToken) {
+                $.ajax({
+                    url: window.location.origin + "/validate-token",
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", "Bearer " + accessToken);
+                    },
+                    success: function (token) {
+                      console.log('TCL ------> : login -> DECODED ', token)
+
+                        $("#tokenStatus").text('validated token');
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log("textStatus: " + textStatus + ", errorThrown:" + errorThrown);
+                        $("#divError").text(errorThrown).css({ display: "" });
+                        $("#divProfile").css({ display: "none" });
+                    },
+                });
+            }
+
+
+            
+        microsoftTeams.initialize();
+
+            // Login to Azure AD and get access to Microsoft Graph
+                hideProfileAndError(); 
+
+                microsoftTeams.authentication.authenticate({
+                    url: window.location.origin + "/auth",
+                    width: 600,
+                    height: 535,
+                    successCallback: function (result) {
+                        console.log("Login succeeded: " + result);
+                        getUserProfile(result.accessToken);
+                        console.log('TCL ------> : login -> result.accessToken', result.accessToken)
+                        validateToken(result.accessToken)
+
+                    },
+                    failureCallback: function (reason) {
+                        console.log("Login failed: " + reason);
+                        handleAuthError(reason);
+                    }
+                });
+          }
+</script>
 </html>
